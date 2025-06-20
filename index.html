@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Rolling Sphere</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #f0f0f0; }
+        canvas { display: block; }
+        #fullscreenButton {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 10px 15px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            z-index: 10;
+        }
+        #fullscreenButton:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <button id="fullscreenButton">Fullscreen</button>
+    <canvas id="sphereCanvas"></canvas>
+    <script type="module">
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.135.0/build/three.module.js';
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('sphereCanvas'), antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+
+        camera.position.set(0, 2, 5);
+
+        // Create stripes texture
+        const stripesTexture = new THREE.CanvasTexture(generateStripes(64));
+        stripesTexture.wrapS = THREE.RepeatWrapping;
+        stripesTexture.wrapT = THREE.RepeatWrapping;
+        stripesTexture.repeat.set(1, 1);
+
+        const geometry = new THREE.SphereGeometry(1, 32, 32);
+        const material = new THREE.MeshLambertMaterial({ map: stripesTexture });
+        const sphere = new THREE.Mesh(geometry, material);
+        scene.add(sphere);
+
+        // Add ambient light
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        // Add directional light
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight.position.set(5, 5, 5);
+        scene.add(directionalLight);
+
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        let sphereIsDragging = false;
+        let previousSpherePosition = { x: 0, y: 0 };
+
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        renderer.domElement.addEventListener('mousedown', (event) => {
+            mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+            mouse.y = - (event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObject(sphere);
+
+            if (intersects.length > 0) {
+                sphereIsDragging = true;
+                previousSpherePosition = { x: event.clientX, y: event.clientY };
+            } else {
+                isDragging = true;
+                previousMousePosition = { x: event.clientX, y: event.clientY };
+            }
+        });
+
+        renderer.domElement.addEventListener('mousemove', (event) => {
+            event.preventDefault();
+
+            if (sphereIsDragging) {
+                const deltaX = (event.clientX - previousSpherePosition.x) / 100;
+                const deltaY = (event.clientY - previousSpherePosition.y) / 100;
+
+                sphere.position.x += deltaX;
+                sphere.position.z -= deltaY; // Adjust Z based on Y mouse movement
+
+                // Simulate rolling
+                const moveVec = new THREE.Vector3(deltaX, 0, -deltaY).normalize();
+                const rotationAxis = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), moveVec).normalize();
+                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                sphere.rotateOnAxis(rotationAxis, distance);
+
+                previousSpherePosition = { x: event.clientX, y: event.clientY };
+            } else if (isDragging) {
+                const deltaMove = {
+                    x: event.clientX - previousMousePosition.x,
+                    y: event.clientY - previousMousePosition.y
+                };
+
+                // Adjust camera orbit speed
+                const orbitFactor = 0.005;
+                camera.position.x = camera.position.x * Math.cos(deltaMove.x * orbitFactor) - camera.position.z * Math.sin(deltaMove.x * orbitFactor);
+                camera.position.z = camera.position.x * Math.sin(deltaMove.x * orbitFactor) + camera.position.z * Math.cos(deltaMove.x * orbitFactor);
+                camera.position.y += deltaMove.y * orbitFactor;
+
+                camera.lookAt(sphere.position);
+
+                previousMousePosition = { x: event.clientX, y: event.clientY };
+            }
+        });
+
+        renderer.domElement.addEventListener('mouseup', () => {
+            isDragging = false;
+            sphereIsDragging = false;
+        });
+
+        renderer.domElement.addEventListener('mouseout', () => {
+            isDragging = false;
+            sphereIsDragging = false;
+        });
+
+        let rotationSpeed = 0;
+        let rotationDirection = 0; // 1 for left, -1 for right
+        const rotationAcceleration = 0.001;
+        const maxRotationSpeed = 0.1;
+        const rotationDeceleration = 0.97;
+        let isRotatingWithKeys = false;
+        const zoomSpeed = 0.1;
+
+        // Keyboard controls remapping
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowLeft') {
+                rotationDirection = 1;
+                isRotatingWithKeys = true;
+            } else if (event.key === 'ArrowRight') {
+                rotationDirection = -1;
+                isRotatingWithKeys = true;
+            } else if (event.key === 'ArrowUp') {
+                camera.position.z -= zoomSpeed;
+            } else if (event.key === 'ArrowDown') {
+                camera.position.z += zoomSpeed;
+            }
+        });
+
+        document.addEventListener('keyup', (event) => {
+            if (event.key === 'ArrowLeft' && rotationDirection === 1) {
+                isRotatingWithKeys = false;
+            } else if (event.key === 'ArrowRight' && rotationDirection === -1) {
+                isRotatingWithKeys = false;
+            }
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (isRotatingWithKeys) {
+                rotationSpeed = Math.min(maxRotationSpeed, rotationSpeed + rotationAcceleration);
+                sphere.rotation.y += rotationSpeed * rotationDirection;
+            } else if (rotationSpeed > 0.0001 || rotationSpeed < -0.0001) {
+                sphere.rotation.y += rotationSpeed * rotationDirection;
+                rotationSpeed *= rotationDeceleration;
+            } else {
+                rotationSpeed = 0;
+            }
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Function to generate stripes texture
+        function generateStripes(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, size, size);
+
+            ctx.fillStyle = '#000000';
+            const stripeWidth = size / 10;
+            for (let i = 0; i < 10; i += 2) {
+                ctx.fillRect(0, i * stripeWidth, size, stripeWidth);
+            }
+
+            return canvas;
+        }
+
+        // Fullscreen button functionality
+        document.getElementById('fullscreenButton').addEventListener('click', () => {
+            if (document.fullscreenEnabled) {
+                if (!document.fullscreenElement) {
+                    document.getElementById('sphereCanvas').requestFullscreen();
+                } else {
+                    document.exitFullscreen();
+                }
+            } else {
+                alert("Your browser doesn't support the fullscreen API.");
+            }
+        });
+    </script>
+</body>
+</html>
