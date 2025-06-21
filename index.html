@@ -72,14 +72,8 @@
 
         // --- Physics Variables ---
         let velocity = new THREE.Vector3(0, 0, 0); // Ball velocity in world space
-        let angularVelocity = new THREE.Vector3(0, 0, 0); // Angular velocity (radians/sec)
-        let force = new THREE.Vector3(0, 0, 0); // Current force applied on the ball
-        let torque = new THREE.Vector3(0, 0, 0); // Current torque applied on the ball
-
         const mass = 2; // kg (arbitrary)
-        const inertia = (2/5) * mass * sphereRadius * sphereRadius; // solid sphere moment of inertia
         const frictionCoeff = 0.01; // minimal friction
-        const rollingFrictionCoeff = 0.002; // even less for rolling
         const dt = 1 / 60; // physics timestep
 
         // --- Keyboard Input State ---
@@ -90,11 +84,12 @@
             down: false
         };
 
-        // --- Dragging (Mouse) Input State ---
+        // --- Mouse Dragging State ---
         let sphereIsDragging = false;
-        let dragStart = { x: 0, y: 0 };
-        let dragVel = new THREE.Vector3(0, 0, 0);
+        let dragOffset = new THREE.Vector3();
+        let dragTargetWorld = new THREE.Vector3();
 
+        // --- Raycasting for drag ---
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
 
@@ -106,40 +101,34 @@
 
             if (intersects.length > 0) {
                 sphereIsDragging = true;
-                dragStart = { x: event.clientX, y: event.clientY };
-                dragVel.set(0, 0, 0);
+                // Find intersection point on the plane at y = sphereRadius
+                dragOffset.copy(intersects[0].point).sub(sphere.position);
             }
         });
 
         renderer.domElement.addEventListener('mousemove', (event) => {
             if (sphereIsDragging) {
-                // Calculate drag velocity in world XZ plane
-                const dx = (event.clientX - dragStart.x) / 70; // scaling factor for realism
-                const dy = (event.clientY - dragStart.y) / 70;
-                dragVel.set(dx, 0, -dy);
+                // Project mouse onto plane y = sphereRadius
+                mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+                mouse.y = - (event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+                const planeY = sphereRadius;
+                const planeNormal = new THREE.Vector3(0, 1, 0);
+                const plane = new THREE.Plane(planeNormal, -planeY);
+                let intersection = new THREE.Vector3();
+                raycaster.ray.intersectPlane(plane, intersection);
+                if (intersection) {
+                    dragTargetWorld.copy(intersection).sub(dragOffset);
+                }
             }
         });
 
         renderer.domElement.addEventListener('mouseup', () => {
-            if (sphereIsDragging) {
-                // Impart the drag velocity as an impulse
-                velocity.add(dragVel);
-                // Set appropriate angular velocity for rolling
-                const moveDir = dragVel.clone();
-                if (moveDir.length() > 0) {
-                    const axis = new THREE.Vector3().crossVectors(moveDir, new THREE.Vector3(0, 1, 0)).normalize();
-                    angularVelocity.add(axis.multiplyScalar(moveDir.length() / sphereRadius));
-                }
-                sphereIsDragging = false;
-                dragVel.set(0, 0, 0);
-            }
+            sphereIsDragging = false;
         });
 
         renderer.domElement.addEventListener('mouseout', () => {
-            if (sphereIsDragging) {
-                sphereIsDragging = false;
-                dragVel.set(0, 0, 0);
-            }
+            sphereIsDragging = false;
         });
 
         // --- Keyboard Controls ---
@@ -158,9 +147,8 @@
 
         // --- Camera Follows Ball ---
         function updateCamera() {
-            // Camera follows behind and above the ball
+            // Camera follows behind and above the ball, in the direction of velocity
             const camOffset = new THREE.Vector3(0, 4, 9);
-            // Align camOffset direction with velocity if moving, otherwise look from default Z
             let lookDir = velocity.length() > 0.1 ? velocity.clone().normalize() : new THREE.Vector3(0, 0, 1);
             let behind = lookDir.clone().multiplyScalar(-camOffset.z);
             let above = new THREE.Vector3(0, camOffset.y, 0);
@@ -168,49 +156,44 @@
             camera.lookAt(sphere.position);
         }
 
-        // --- Open World - Infinite Plane (no boundaries) ---
-
         // --- Main Animation and Physics Loop ---
         function animate() {
             requestAnimationFrame(animate);
 
             // --- Apply user forces (keys or drag) ---
-            force.set(0, 0, 0);
-            torque.set(0, 0, 0);
+            let force = new THREE.Vector3(0, 0, 0);
 
-            // Arrow keys apply force and torque
-            // Up/Down: push from rear/front, rolling forward/backward
-            // Left/Right: push from side, rolling left/right
-
-            // Both L+R (or U+D) = spin in place (apply torque only, no force)
+            // Arrow keys apply force
             const fmag = 6.0; // Newtons (arbitrary)
-            const tmul = 0.7; // torque multiplier for spin
+            if (keyState.up)    force.add(new THREE.Vector3(0, 0, -fmag));
+            if (keyState.down)  force.add(new THREE.Vector3(0, 0, fmag));
+            if (keyState.left)  force.add(new THREE.Vector3(-fmag, 0, 0));
+            if (keyState.right) force.add(new THREE.Vector3(fmag, 0, 0));
 
-            // Spin logic
+            // If both left/right or up/down: spin in place (but not move)
+            // To get pure spinning, we skip force if both are pressed at once
             if ((keyState.left && keyState.right) && !(keyState.up || keyState.down)) {
-                // Spin around Y (horizontal spin)
-                torque.set(0, tmul * fmag, 0);
-            } else if ((keyState.up && keyState.down) && !(keyState.left || keyState.right)) {
-                // Spin around X (vertical spin)
-                torque.set(tmul * fmag, 0, 0);
-            } else {
-                // Up/Down: roll forward/backward
-                if (keyState.up) {
-                    force.add(new THREE.Vector3(0, 0, -fmag));
-                }
-                if (keyState.down) {
-                    force.add(new THREE.Vector3(0, 0, fmag));
-                }
-                // Left/Right: roll left/right
-                if (keyState.left) {
-                    force.add(new THREE.Vector3(-fmag, 0, 0));
-                }
-                if (keyState.right) {
-                    force.add(new THREE.Vector3(fmag, 0, 0));
-                }
+                force.set(0, 0, 0);
+            }
+            if ((keyState.up && keyState.down) && !(keyState.left || keyState.right)) {
+                force.set(0, 0, 0);
             }
 
-            // --- Physics Integration ---
+            // --- Mouse Drag: "Push" the sphere to follow the cursor (with physics) ---
+            if (sphereIsDragging) {
+                // Move the ball toward dragTargetWorld, but use physics: compute velocity needed, apply force proportional to distance
+                const toTarget = dragTargetWorld.clone().sub(sphere.position);
+                // Only move on XZ plane
+                toTarget.y = 0;
+                // Apply a spring force toward the target (acts like your hand is pushing the ball)
+                const k = 45.0; // spring constant: higher = stiffer "hand"
+                force.add(toTarget.multiplyScalar(k));
+                // Add some damping to avoid oscillation
+                const damping = 12.0;
+                force.add(velocity.clone().multiplyScalar(-damping));
+            }
+
+            // --- Physics Integration: Rolling only (no sliding) ---
             // F = ma => a = F/m
             let acceleration = force.clone().divideScalar(mass);
 
@@ -222,16 +205,14 @@
             velocity.add(acceleration.multiplyScalar(dt));
             sphere.position.add(velocity.clone().multiplyScalar(dt));
 
-            // Rolling friction (proportional to angular velocity)
-            let rollingFriction = angularVelocity.clone().multiplyScalar(-rollingFrictionCoeff);
-            // τ = Iα => α = τ/I
-            let angularAcc = torque.clone().divideScalar(inertia).add(rollingFriction);
-
-            // Update angular velocity and orientation
-            angularVelocity.add(angularAcc.multiplyScalar(dt));
-            let axis = angularVelocity.clone().normalize();
-            let angle = angularVelocity.length() * dt;
-            if (angle > 0.00001) {
+            // --- Rolling animation: rotation is tied to translation ---
+            // For rolling without slipping: v = ω × r  =>  ω = v / r
+            // But need to rotate around axis perpendicular to velocity in XZ plane
+            let vXZ = velocity.clone(); vXZ.y = 0;
+            let speed = vXZ.length();
+            if (speed > 0.0001) {
+                let axis = new THREE.Vector3(-vXZ.z, 0, vXZ.x).normalize(); // perpendicular in XZ plane
+                let angle = speed * dt / sphereRadius;
                 sphere.rotateOnAxis(axis, angle);
             }
 
