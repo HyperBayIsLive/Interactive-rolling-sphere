@@ -1,91 +1,79 @@
-# ⚽️ Interactive Rolling Sphere (Three.js)
+# Interactive Rolling Sphere
 
-This is a web-based interactive 3D experience built using **Three.js**, featuring a draggable and rotatable sphere with realistic rolling physics, keyboard controls, and fullscreen toggle support.
+An interactive, physics-based 3D rolling sphere simulation in the browser, built with [Three.js](https://threejs.org/).  
+Move, spin, and flick the sphere realistically using your keyboard or mouse—experience true Newtonian motion, inertia, and minimal friction, all in an endless open world.
 
-> 🎯 **Purpose:** This lightweight project serves as a prototype for exploring intuitive 3D object interaction using modern WebGL tools.
+## 🟠 Features
 
----
+- **Real Physics:**  
+  The sphere obeys Newton's laws with inertia, mass, friction, and rolling torque.
+- **Open World:**  
+  An infinite plane—no boundaries to stop your sphere.
+- **Intuitive Controls:**  
+  - **Mouse:**  
+    Drag the sphere to "flick" it in any direction, just like rolling a real ball on a surface.
+  - **Keyboard:**  
+    - Arrow keys apply directional forces—roll forward, backward, or sideways.
+    - Hold both left/right or up/down arrows to spin the sphere in place (horizontal/vertical spin).
+  - Inertia and friction ensure the ball moves and slows down naturally.
+- **Camera:**  
+  The camera automatically follows the sphere, always keeping it in view.
+- **Minimal UI:**  
+  Simple, fullscreen experience with a clear, unobtrusive interface.
+- **Responsive:**  
+  Adapts to any screen size.
 
-## ✨ Features
+## 🚀 Demo
 
-* 🖱️ **Drag-to-Roll Mechanics**
-  Click and drag the sphere to move and rotate it in real-time.
+> Coming soon!
 
-* 🔁 **Camera Orbiting**
-  Click-drag outside the sphere to rotate the camera around it.
+## 🕹️ Controls
 
-* 🎨 **Striped Custom Texture**
-  Generated dynamically using an HTML canvas texture.
+| Action                        | How to do it            | Result                                      |
+|-------------------------------|-------------------------|---------------------------------------------|
+| Flick sphere                  | Drag with mouse         | Ball rolls with realistic inertia & spin    |
+| Roll sphere forward/backward  | Up / Down arrow keys    | Ball rolls in respective direction          |
+| Roll sphere left/right        | Left / Right arrow keys | Ball rolls left or right                    |
+| Spin in place (horizontal)    | Hold Left + Right arrows| Ball spins horizontally                     |
+| Spin in place (vertical)      | Hold Up + Down arrows   | Ball spins vertically                       |
+| Fullscreen mode               | Click "Fullscreen"      | Immersive experience                        |
 
-* 🎮 **Keyboard Controls**
+## 🛠️ How It Works
 
-  * `ArrowLeft` / `ArrowRight`: Smooth spin with acceleration
-  * `ArrowUp` / `ArrowDown`: Zoom in and out
+- Uses Three.js for rendering and scene management.
+- Newtonian equations for force, velocity, torque, and angular motion.
+- Mouse and keyboard input are mapped to real-world physics (impulse, force, torque).
+- Ball and camera movement are decoupled—camera smoothly follows the sphere.
+- Minimal friction coefficient for a near-perfect rolling experience.
 
-* 🖥️ **Responsive Design**
-  Automatically resizes canvas on window resize.
+## 💻 Installation & Running Locally
 
-* ⛶ **Fullscreen Toggle**
-  One-click button to enter or exit fullscreen mode.
+1. Clone the repo:
+    ```sh
+    git clone https://github.com/HyperBayIsLive/Interactive-rolling-sphere.git
+    cd Interactive-rolling-sphere
+    ```
+2. Open `index.html` in your favorite browser (no build step required).
 
----
+    > **Note:** For best results, use Chrome, Edge, or Firefox with WebGL enabled.
 
-## 🧪 How to Run
+## 📦 Dependencies
 
-1. Clone the repository or download the `.html` file:
+- [Three.js](https://threejs.org/) (loaded via CDN)
 
-   ```bash
-   git clone https://github.com/your-username/interactive-rolling-sphere.git
-   ```
-
-2. Open the file with a modern browser (Chrome, Edge, Firefox).
-
-3. Interact with the sphere using your mouse or keyboard.
-
-✅ No build tools or local server required.
-
----
-
-## 📁 File Structure
+## 📚 Project Structure
 
 ```
-interactive-rolling-sphere/
-├── index.html            # Main interactive HTML file
+.
+├── index.html      # Main app (Three.js logic, physics, UI)
+└── README.md       # This file
 ```
 
----
+## 📝 License
 
-## ⚠️ Known Issues / Limitations
-
-* 🧭 Camera controls may behave erratically if the mouse is moved too fast.
-* 📱 Mobile device interaction is limited (no touch support yet).
-* 🌍 No physics engine used—movement is visual only (no real-world mass/momentum).
-* 🧩 Fullscreen toggle may not work on unsupported browsers.
-
-> Contributions or pull requests to improve interaction, physics, or mobile support are welcome!
+MIT License.  
+Feel free to fork, extend, or use as a starting point for your own physics-based web projects!
 
 ---
 
-## 🪪 License
-
-This project is licensed under the [MIT License](LICENSE).
-
----
-
-## 🙋‍♂️ Author
-
-Created by [Tarun Bali](https://www.linkedin.com/in/tarun-bali/)
-Open for collaboration, ideas, and feedback.
-
----
-
-## 🚀 Share & Support
-
-If you enjoyed this project or found it useful, consider giving it a ⭐️ on GitHub and sharing it with others interested in:
-
-* Web-based 3D experiences
-* Three.js projects
-* Interactive UI/UX demos
-* Learning WebGL basics
-
-> Designed for developers, hobbyists, and 3D enthusiasts alike!
+**Made with ❤️ by [HyperBayIsLive](https://github.com/HyperBayIsLive)**
