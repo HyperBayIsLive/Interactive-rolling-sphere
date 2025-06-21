@@ -1,79 +1,73 @@
 # Interactive Rolling Sphere
 
-An interactive, physics-based 3D rolling sphere simulation in the browser, built with [Three.js](https://threejs.org/).  
-Move, spin, and flick the sphere realistically using your keyboard or mouse—experience true Newtonian motion, inertia, and minimal friction, all in an endless open world.
+An interactive, physics-accurate 3D rolling sphere simulation in the browser, built with [Three.js](https://threejs.org/).  
+The sphere rolls, spins, and reacts to your keyboard and mouse with real inertia and friction, all in an endless open world.
 
-## 🟠 Features
+---
 
-- **Real Physics:**  
-  The sphere obeys Newton's laws with inertia, mass, friction, and rolling torque.
-- **Open World:**  
-  An infinite plane—no boundaries to stop your sphere.
+## 🎮 Features
+
+- **Realistic Rolling Physics:**  
+  Sphere motion (by keyboard or mouse) is always accompanied by physically accurate rolling animation—no sliding.
 - **Intuitive Controls:**  
-  - **Mouse:**  
-    Drag the sphere to "flick" it in any direction, just like rolling a real ball on a surface.
-  - **Keyboard:**  
-    - Arrow keys apply directional forces—roll forward, backward, or sideways.
-    - Hold both left/right or up/down arrows to spin the sphere in place (horizontal/vertical spin).
-  - Inertia and friction ensure the ball moves and slows down naturally.
-- **Camera:**  
-  The camera automatically follows the sphere, always keeping it in view.
+  - **Arrow keys:** Apply directional forces to roll the ball forward, backward, left, or right. Reverse direction to slow down and stop.
+  - **Mouse drag:** Hold and drag the ball to "push" it around with your virtual hand, as if rolling a real ball—feels natural and responsive.
+  - **Spin in place:** Hold both left + right or up + down arrows to spin the sphere about its axis.
+- **Endless Open World:**  
+  The ground is an infinite plane—no boundaries, just roll forever.
+- **Automatic Camera:**  
+  Camera follows the ball from behind and above, always keeping it in view.
 - **Minimal UI:**  
-  Simple, fullscreen experience with a clear, unobtrusive interface.
-- **Responsive:**  
-  Adapts to any screen size.
+  Clean, fullscreen experience with a single "Fullscreen" button.
 
-## 🚀 Demo
-
-> Coming soon!
+---
 
 ## 🕹️ Controls
 
-| Action                        | How to do it            | Result                                      |
-|-------------------------------|-------------------------|---------------------------------------------|
-| Flick sphere                  | Drag with mouse         | Ball rolls with realistic inertia & spin    |
-| Roll sphere forward/backward  | Up / Down arrow keys    | Ball rolls in respective direction          |
-| Roll sphere left/right        | Left / Right arrow keys | Ball rolls left or right                    |
-| Spin in place (horizontal)    | Hold Left + Right arrows| Ball spins horizontally                     |
-| Spin in place (vertical)      | Hold Up + Down arrows   | Ball spins vertically                       |
-| Fullscreen mode               | Click "Fullscreen"      | Immersive experience                        |
+| Action                          | How to do it                | Result                                                |
+|----------------------------------|-----------------------------|-------------------------------------------------------|
+| Roll forward/back/left/right     | Arrow keys                  | Ball rolls & animates in that direction               |
+| Slow down or stop                | Arrow key opposite motion   | Ball slows and stops with realistic inertia           |
+| Spin in place (horizontal/vert.) | Hold L+R/Up+Down arrows     | Ball spins in place                                   |
+| Roll with mouse                  | Drag ball with left mouse   | Ball follows cursor as if "pushed" by your hand       |
+| Fullscreen mode                  | Click "Fullscreen" button   | Immersive experience                                  |
 
-## 🛠️ How It Works
+---
 
-- Uses Three.js for rendering and scene management.
-- Newtonian equations for force, velocity, torque, and angular motion.
-- Mouse and keyboard input are mapped to real-world physics (impulse, force, torque).
-- Ball and camera movement are decoupled—camera smoothly follows the sphere.
-- Minimal friction coefficient for a near-perfect rolling experience.
+## 🚀 Getting Started
 
-## 💻 Installation & Running Locally
-
-1. Clone the repo:
+1. **Clone or Download:**
     ```sh
     git clone https://github.com/HyperBayIsLive/Interactive-rolling-sphere.git
     cd Interactive-rolling-sphere
     ```
-2. Open `index.html` in your favorite browser (no build step required).
-
-    > **Note:** For best results, use Chrome, Edge, or Firefox with WebGL enabled.
-
-## 📦 Dependencies
-
-- [Three.js](https://threejs.org/) (loaded via CDN)
-
-## 📚 Project Structure
-
-```
-.
-├── index.html      # Main app (Three.js logic, physics, UI)
-└── README.md       # This file
-```
-
-## 📝 License
-
-MIT License.  
-Feel free to fork, extend, or use as a starting point for your own physics-based web projects!
+2. **Open `index.html` in your browser.**
+    - No build step needed.
+    - For best results, use Chrome, Firefox, or Edge.
 
 ---
 
-**Made with ❤️ by [HyperBayIsLive](https://github.com/HyperBayIsLive)**
+## 📦 Dependencies
+
+- [Three.js](https://threejs.org/) (CDN, no installation required)
+
+---
+
+## 🛠️ How It Works
+
+- Uses real Newtonian physics for force, velocity, and rolling.
+- The sphere's rotation is always synchronized with its movement for perfect rolling.
+- Mouse drag calculates a physical force as if you’re pushing the sphere.
+- Friction and inertia are modeled for realistic slow-down and stopping.
+- Camera movement is smooth and dynamic.
+
+---
+
+## 📝 License
+
+MIT License  
+Feel free to fork, extend, and use as inspiration for your own web physics projects!
+
+---
+
+**Made by [HyperBayIsLive](https://github.com/HyperBayIsLive)**
